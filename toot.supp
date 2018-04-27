@@ -1,0 +1,99 @@
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    obj:*libXcursor*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    obj:*libX11*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr4
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr8
+    ...
+    obj:*libSDL2*
+}
+
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value4
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value8
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    obj:*i965_dri*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr4
+    ...
+    obj:*i965_dri*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr8
+    ...
+    obj:*i965_dri*
+}
+
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value4
+    ...
+    obj:*i965_dri*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value8
+    ...
+    obj:*i965_dri*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr1
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Addr2
+    ...
+    obj:*libSDL2*
+}
+
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value1
+    ...
+    obj:*libSDL2*
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Value2
+    ...
+    obj:*libSDL2*
+}

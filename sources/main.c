@@ -11,23 +11,28 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-int		init(world_t *world);
+bool		init(world_t *world);
 void		quit(world_t *world);
 
 int		main()
 {
 	world_t	*world;
 
-	if (	new_world(&world) == EXIT_FAILURE ||
-		init(world) == EXIT_FAILURE)
+	if (!new_world(&world) || !init(world))
 	{
 		fprintf(stderr, "Error : %s\n", errma());
-		return(EXIT_FAILURE);
+		quit(world);
+		return(false);
 	}
 
 	printf("end of init\n");
 
-	main_loop(world);
+	printf("starting main loop\n");
+
+	if (!main_loop(world))
+	{
+		fprintf(stderr, "Error : %s\n", errma());
+	}
 
 	printf("end of main loop\n");
 
@@ -35,7 +40,7 @@ int		main()
 	return EXIT_SUCCESS;
 }
 
-int		init(world_t *world)
+bool		init(world_t *world)
 {
 	world->running = true;
 	world->size[0] = 720;
@@ -44,51 +49,43 @@ int		init(world_t *world)
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) < 0)
 	{
 		set_errma(SDL_ER);
-		fprintf(stderr, "Error : %s\n", errma());
-		return(EXIT_FAILURE);
+		return(false);
 	}
+
 	if (SDL_CreateWindowAndRenderer(
 		world->size[1], world->size[0], 0,
 		&(world->window), &(world->renderer)) < 0)
 	{
 		set_errma(SDL_ER);
-		fprintf(stderr, "Error : %s\n", errma());
-		SDL_Quit();
-		return(EXIT_FAILURE);
+		return(false);
 	}
+
 	if (
 	SDL_SetRenderDrawBlendMode(world->renderer, SDL_BLENDMODE_BLEND) < 0 ||
 	SDL_RenderClear(world->renderer) < 0)
 	{
 		set_errma(SDL_ER);
-		fprintf(stderr, "Error : %s\n", errma());
-		SDL_Quit();
-		return(EXIT_FAILURE);
+		return(false);
 	}
+
 	if (TTF_Init() < 0)
 	{
 		set_errma(TTF_ER);
-		fprintf(stderr, "Error : %s\n", errma());
-		SDL_Quit();
-		return(EXIT_FAILURE);
+		return(false);
 	}
+
 	if ((world->ttf_font = TTF_OpenFont(MAIN_FONT, MED_FONT)) == NULL)
 	{
 		set_errma(TTF_ER);
-		fprintf(stderr, "error: %s\n", errma());
-		TTF_Quit();
-		SDL_Quit();
-		return(EXIT_FAILURE);
+		return(false);
 	}
 
-	return(EXIT_SUCCESS);
+	return(true);
 }
 
 void		quit(world_t *world)
 {
-	SDL_DestroyRenderer(world->renderer);
-	SDL_DestroyWindow(world->window);
-
+	del_world(world);
 	TTF_Quit();
 	SDL_Quit();
 }

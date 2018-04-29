@@ -18,6 +18,8 @@ void get_input(world_t *world)
 				break;
 			case SDL_MOUSEBUTTONUP :
 				world->click = true;
+				printf("%ix%i\n", world->mouse_pos[0], world->mouse_pos[1]);
+				printf("appuie\n");
 				break;
 		}
 

@@ -1,4 +1,3 @@
-#include <stdint.h>	//for uint8_t
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -40,18 +39,10 @@ button_t		*new_button(	world_t		*world,
 	set_over_func(new_but);
 	set_button_func(new_but);
 
-	new_but->button_func	= NULL;
-
-	printf("new_but->txr (addr)           : %p\n", new_but->txr);
-	printf("new_but->rect (addr)          : %p\n", new_but->rect);
-	printf("new_but->info (addr)          : %p\n", new_but->info);
-	printf("new_but->button_func (addr)   : %p\n", new_but->button_func);
-	printf("new_but->over_in_func (addr)  : %p\n", new_but->over_in_func);
-	printf("new_but->over_out_func (addr) : %p\n", new_but->over_out_func);
-
 	if (	new_but->txr == NULL ||
 		new_but->rect == NULL ||
 		new_but->info == NULL ||
+		new_but->button_func == NULL ||
 		new_but->over_in_func == NULL ||
 		new_but->over_out_func == NULL)
 	{
@@ -66,20 +57,18 @@ void			set_button_rect(button_t	*but,
 					int		y,
 					pos_type_t	ref)
 {
-	// printf("start setting rect\n");
 	if (SDL_QueryTexture(	but->txr, NULL, NULL,
 				&but->rect->w, &but->rect->h) < 0)
 	{
 		set_errma(SDL_ER);
 		return;
 	}
-	// printf("done with SDL_QueryTexture\n");
 
 	switch (ref)
 	{
 		case CENTER:
-			but->rect->x = x - but->rect->w / 2;
-			but->rect->y = y - but->rect->h / 2;
+			but->rect->x = x - (but->rect->w / 2);
+			but->rect->y = y - (but->rect->h / 2);
 			break;
 		case TOPLEFT:
 		default :
@@ -99,7 +88,7 @@ void			set_button_txr(	world_t 	*world,
 	switch (but->txr_type)
 	{
 		case TXR_TEXT:
-			surf = TTF_RenderText_Blended(	world->ttf_font,
+			surf = TTF_RenderUTF8_Blended(	world->ttf_font,
 							info,
 							GOLD);
 			if (surf == NULL)
@@ -125,38 +114,22 @@ void			set_button_txr(	world_t 	*world,
 }
 
 
-void			destroy_button(button_t *but)
+void			del_button(button_t *but)
 {
 	if (but->rect)
 	{
 		free(but->rect);
 		but->rect = NULL;
 	}
-	if (but->button_func)
-	{
-		free(but->button_func);
-		but->button_func = NULL;
-	}
-	if (but->over_in_func)
-	{
-		free(but->over_in_func);
-		but->over_in_func = NULL;
-	}
-	if (but->over_out_func)
-	{
-		free(but->over_out_func);
-		but->over_out_func = NULL;
-	}
 	if (but->txr)
 	{
 		SDL_DestroyTexture(but->txr);
 		but->txr = NULL;
 	}
-	if (but->rect)
-	{
-		free(but->rect);
-		but->rect = NULL;
-	}
+	but->button_func = NULL;
+	but->over_in_func = NULL;
+	but->over_out_func = NULL;
+	but->info = NULL;
 	if (but)
 	{
 		free(but);
@@ -192,9 +165,10 @@ void			over_in_txr_txt(world_t* world, button_t* but)
 {
 	SDL_Surface	*surf;
 
-	surf = TTF_RenderText_Blended(	world->ttf_font,
+	surf = TTF_RenderUTF8_Blended(	world->ttf_font,
 					but->info,
 					WHITE);
+	SDL_DestroyTexture(but->txr);
 	but->txr = SDL_CreateTextureFromSurface(world->renderer,
 						surf);
 	SDL_FreeSurface(surf);
@@ -209,9 +183,10 @@ void			over_out_txr_txt(world_t* world, button_t* but)
 {
 	SDL_Surface	*surf;
 
-	surf = TTF_RenderText_Blended(	world->ttf_font,
+	surf = TTF_RenderUTF8_Blended(	world->ttf_font,
 					but->info,
 					GOLD);
+	SDL_DestroyTexture(but->txr);
 	but->txr = SDL_CreateTextureFromSurface(world->renderer,
 						surf);
 	SDL_FreeSurface(surf);
@@ -222,43 +197,55 @@ void			set_button_func(button_t *but)
 	switch (but->but_type)
 	{
 		case NEW_CAMP :
-			// but->button_func =
+			but->button_func = &load_difficulty_scene;
 			break;
 		case CONT_CAMP :
-			// but->button_func =
+			but->button_func = &continue_campaign;
 			break;
 		case EASY_DIF :
-			// but->button_func =
+			but->button_func = &set_diff_easy;
 			break;
 		case MED_DIF :
-			// but->button_func =
+			but->button_func = &set_diff_medium;
 			break;
 		case HARD_DIF :
-			// but->button_func =
+			but->button_func = &set_diff_hard;
 			break;
 		case BACK :
-			// but->button_func =
+			but->button_func = &load_main_menu_scene;
 			break;
 		case QUICK_GAME :
-			// but->button_func =
+			but->button_func = &load_quick_game_menu_scene;
 			break;
 		case VS_AI :
-			// but->button_func =
+			but->button_func = &vs_ai;
 			break;
 		case VS_PLY_ON :
-			// but->button_func =
+			but->button_func = &vs_player_online;
 			break;
 		case VS_PLY_OFF :
-			// but->button_func =
+			but->button_func = &vs_player_offline;
 			break;
 		case RULES :
-			// but->button_func =
+			but->button_func = &load_rules_scene;
 			break;
 		case TUTO :
-			// but->button_func =
+			but->button_func = &start_tutorial;
+			break;
+		case SETTINGS :
+			but->button_func = &load_settings_scene;
 			break;
 		case EXIT :
-			// but->button_func =
+			but->button_func = &quit_game;
+			break;
+		case OPT_FULLSCREEN :
+			but->button_func = &option_fullscreen;
+			break;
+		case OPT_SCREEN_SIZE :
+			but->button_func = &option_screen_size;
+			break;
+		case OPT_LANG :
+			but->button_func = &option_lang;
 			break;
 		default :
 			but->button_func = &dummy_function;

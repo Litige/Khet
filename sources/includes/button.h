@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
-static const int but_w = 250;
-static const int but_h =  50;
+// static const int but_w = 250;
+// static const int but_h =  50;
 
 typedef enum 	texture_type_s texture_type_t;
 enum 		texture_type_s
@@ -39,7 +39,10 @@ enum 		button_type_s
 	TUTO,
 	SETTINGS,
 	CREDIT,
-	EXIT
+	EXIT,
+	OPT_FULLSCREEN,
+	OPT_SCREEN_SIZE,
+	OPT_LANG
 };
 
 typedef struct			button_s button_t;
@@ -54,7 +57,7 @@ struct				button_s
 	bool			overed;
 	char			*info;
 
-	void			(*button_func)(world_t*);
+	bool			(*button_func)(world_t*);
 	void			(*over_in_func)(world_t*, button_t*);
 	void			(*over_out_func)(world_t*, button_t*);
 };

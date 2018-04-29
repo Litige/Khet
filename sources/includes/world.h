@@ -19,6 +19,7 @@ struct 			world_s
 	lang_t		lang;
 	bool		running;
 	bool		click;
+	bool		fullscreen;
 	int		mouse_pos[2];
 	int		size[2];
 };

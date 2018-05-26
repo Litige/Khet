@@ -45,3 +45,34 @@ bool	option_fullscreen(world_t * world);
 bool	option_screen_size(world_t * world);
 // lang option button
 bool	option_lang(world_t * world);
+
+// MAP_EDITOR button
+bool	load_editor_scene(world_t *world);
+// save an map in the editor
+bool	save_edit(world_t * world);
+
+// pawn picker pharaoh button
+bool	pawn_picker_pharaoh(world_t * world);
+// pawn picker scarab button
+bool	pawn_picker_scarab(world_t * world);
+// pawn picker anubis button
+bool	pawn_picker_anubis(world_t * world);
+// pawn picker pyramid button
+bool	pawn_picker_pyramid(world_t * world);
+// pawn picker sphinx button
+bool	pawn_picker_sphinx(world_t * world);
+// pawn picker red_square button
+bool	pawn_picker_red_square(world_t * world);
+// pawn picker blue_square button
+bool	pawn_picker_blue_square(world_t * world);
+// pawn picker r_arrow button
+bool	pawn_picker_r_arrow(world_t * world);
+// pawn picker l_arrow button
+bool	pawn_picker_l_arrow(world_t * world);
+// pawn picker delete button
+bool	pawn_picker_delete(world_t * world);
+
+// namer ok button
+bool	namer_ok(world_t * world);
+// namer back button
+bool	namer_back(world_t * world);

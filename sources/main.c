@@ -10,6 +10,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 bool		init(world_t *world);
 void		quit(world_t *world);
@@ -17,6 +18,7 @@ void		quit(world_t *world);
 int		main()
 {
 	world_t	*world;
+
 
 	if (!new_world(&world) || !init(world))
 	{
@@ -40,8 +42,10 @@ int		main()
 	return EXIT_SUCCESS;
 }
 
-bool		init(world_t *world)
+bool			init(world_t *world)
 {
+	SDL_Surface	*icon;
+
 	world->running = true;
 	world->size[0] = 720;
 	world->size[1] = 1280;
@@ -60,6 +64,16 @@ bool		init(world_t *world)
 		return(false);
 	}
 
+	if ((icon = IMG_Load("logo.ico")) == NULL)
+	{
+		set_errma(SDL_ER);
+		return(false);
+	}
+
+	SDL_SetWindowIcon(world->window, icon);
+	SDL_SetWindowTitle(world->window, "K.H.E.T");
+	SDL_FreeSurface(icon);
+
 	if (
 	SDL_SetRenderDrawBlendMode(world->renderer, SDL_BLENDMODE_BLEND) < 0 ||
 	SDL_RenderClear(world->renderer) < 0)
@@ -71,6 +85,12 @@ bool		init(world_t *world)
 	if (TTF_Init() < 0)
 	{
 		set_errma(TTF_ER);
+		return(false);
+	}
+
+	if (IMG_Init(IMG_INIT_JPG) != IMG_INIT_JPG)
+	{
+		set_errma(IMG_ER);
 		return(false);
 	}
 
@@ -86,6 +106,7 @@ bool		init(world_t *world)
 void		quit(world_t *world)
 {
 	del_world(world);
-	TTF_Quit();
+	TTF_Init();
+	IMG_Quit();
 	SDL_Quit();
 }

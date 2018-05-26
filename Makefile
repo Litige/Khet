@@ -5,7 +5,7 @@ CC = gcc
 
 COMPILER_FLAGS = -w -Wall -Werror -Wextra
 
-LINKER_FLAGS = -lSDL2_ttf $(shell sdl2-config --libs --cflags)
+LINKER_FLAGS = -lSDL2_ttf -lSDL2_image -lSDL2_gfx $(shell sdl2-config --libs --cflags)
 
 INCLUDE = -Isources/includes
 
@@ -14,10 +14,10 @@ OBJ_NAME = test
 LIBS += $(LINKER_FLAGS)
 
 build : $(OBJS)
-	$(CC) -o $(OBJ_NAME) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) $(INCLUDE)
+	$(CC) -o $(OBJ_NAME) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) $(INCLUDE) 2> compil.log
 
 clean :
-	rm -f $(wildcard *.o) $(wildcard vgcore.*) $(OBJ_NAME)
+	rm -f $(wildcard vgcore.*) $(OBJ_NAME)
 
 re :	clean build
 

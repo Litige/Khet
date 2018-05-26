@@ -8,10 +8,12 @@ bool		main_loop(world_t *world)
 {
 	int elem_status;
 
-	if (new_scene(world, world->current_scene, MAIN_MENU_S) == false)
-	{
-		return(false);
-	}
+	load_editor_scene(world);
+
+	// if (new_scene(world, world->current_scene, MAIN_MENU_S) == false)
+	// {
+	// 	return(false);
+	// }
 
 	while (world->running)
 	{
@@ -27,8 +29,7 @@ bool		main_loop(world_t *world)
 			return(false);
 		}
 
-		// printf("Starting elems update\n");
-		for(int i = 0 ; world->current_scene->elems[i] != NULL ; i++)
+		for(int i = 0 ; world->current_scene->elems[i] ; i++)
 		{
 			elem_status = update_elem(world,
 					world->current_scene->elems[i]);
@@ -43,6 +44,11 @@ bool		main_loop(world_t *world)
 		}
 
 		SDL_RenderPresent(world->renderer);
+	}
+
+	if(IS_ERRMA_SET)
+	{
+		return(false);
 	}
 
 	return(true);

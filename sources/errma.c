@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 const char	*errma()
 {
@@ -16,6 +17,15 @@ const char	*errma()
 		case TTF_ER:
 			return(TTF_GetError());
 			break;
+		case IMG_ER:
+			return(IMG_GetError());
+			break;
+		case GFX_ER:
+			return("a SDL_gfx error occured");
+			break;
+		case BAD_ARG:
+			return("bad argument where given, fatal error");
+			break;
 		case DEFAULT:
 		default :
 			return("");
@@ -27,4 +37,9 @@ const char	*errma()
 void		set_errma(error_type_t err)
 {
 	__errma = err;
+}
+
+void		get_errma()
+{
+	return(__errma);
 }

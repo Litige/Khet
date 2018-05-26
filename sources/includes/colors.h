@@ -13,6 +13,8 @@ static const SDL_Color BLUE		= (SDL_Color){  0,   0, 255, 255};
 static const SDL_Color GREEN		= (SDL_Color){  0, 255,   0, 255};
 static const SDL_Color RED		= (SDL_Color){255,   0,   0, 255};
 
+static const SDL_Color PURPLE		= (SDL_Color){128,   0, 128, 255};
+
 static const SDL_Color GOLD		= (SDL_Color){255, 223,   0, 255};
 static const SDL_Color DEEP_BLUE	= (SDL_Color){  0, 112, 179, 255};
 static const SDL_Color TRANPARENCY	= (SDL_Color){  0,   0,   0,   0};

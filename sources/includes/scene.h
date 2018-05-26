@@ -1,5 +1,7 @@
 #pragma once
 
+#include "object.h"
+
 #include <stdbool.h>
 
 typedef enum	scene_type_s scene_type_t;
@@ -17,6 +19,6 @@ enum		scene_type_s
 typedef struct	scene_s scene_t;
 struct			scene_s
 {
-	void		**elems;
+	obj_t		**elems;
 	scene_type_t	type;
 };

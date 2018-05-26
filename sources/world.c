@@ -1,10 +1,12 @@
 #include "world.h"
 #include "errma.h"
+#include "text.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 bool		new_world(world_t **world)
 {
@@ -21,12 +23,19 @@ bool		new_world(world_t **world)
 	(*world)->window		= NULL;
 	(*world)->ttf_font		= NULL;
 	(*world)->lang			= EN;
+	(*world)->dif			= NO_DIF;
+	(*world)->type			= NO_TYPE;
+	(*world)->level			= NO_LV;
 	(*world)->running		= true;
 	(*world)->fullscreen		= false;
 	(*world)->mouse_pos[0]		= 0;
 	(*world)->mouse_pos[1]		= 0;
 	(*world)->size[0]		= 0;
 	(*world)->size[1]		= 0;
+	(*world)->click			= false;
+	(*world)->bk_space		= false;
+	(*world)->enter			= false;
+	memset((*world)->txt_input, 0, 32 * sizeof(char));
 
 	return(true);
 }
@@ -65,4 +74,29 @@ void		del_world(world_t *world)
 		free(world);
 		world == NULL;
 	}
+}
+
+bool		set_font_size(world_t *world, int font_size)
+{
+	TTF_CloseFont(world->ttf_font);
+	if ((world->ttf_font = TTF_OpenFont(MAIN_FONT, font_size)) == NULL)
+	{
+		set_errma(TTF_ER);
+		return(false);
+	}
+	return(true);
+}
+
+
+bool		is_txt_input(world_t *world)
+{
+	for (int i = 0; i < 32; i++)
+	{
+		if (world->txt_input[i] != 0)
+		{
+			return(true);
+		}
+	}
+
+	return(false);
 }

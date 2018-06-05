@@ -1,10 +1,9 @@
 #pragma once
 
-#include "object.h"
-#include "pawn.h"
-#include "square.h"
-#include "world.h"
 
+#include "object.h"
+#include "world.h"
+#include "pawn.h"
 #include "stdbool.h"
 
 #include <SDL2/SDL.h>
@@ -28,6 +27,8 @@ struct			pawn_picker_s
 	pawn_color_t	col;
 	int		status;
 };
+
+#include "square.h"
 
 obj_t		*new_pawn_picker(world_t *world);
 void		delete_pawn_picker(obj_t *pwp);

@@ -44,13 +44,13 @@ obj_t		*new_text(	world_t		*world,
 	return(new_obj);
 }
 
-void			set_text_rect(	text_t	*but,
+void			set_text_rect(	text_t	*text,
 					int		x,
 					int		y,
 					pos_type_t	ref)
 {
-	if (SDL_QueryTexture(	but->txr, NULL, NULL,
-				&but->rect->w, &but->rect->h) < 0)
+	if (SDL_QueryTexture(	text->txr, NULL, NULL,
+				&text->rect->w, &text->rect->h) < 0)
 	{
 		set_errma(SDL_ER);
 		return;
@@ -59,20 +59,20 @@ void			set_text_rect(	text_t	*but,
 	switch (ref)
 	{
 		case CENTER:
-			but->rect->x = x - (but->rect->w / 2);
-			but->rect->y = y - (but->rect->h / 2);
+			text->rect->x = x - (text->rect->w / 2);
+			text->rect->y = y - (text->rect->h / 2);
 			break;
 		case TOPLEFT:
 		default :
-			but->rect->x = x;
-			but->rect->y = y;
+			text->rect->x = x;
+			text->rect->y = y;
 			break;
 	}
 
 }
 
 void			set_text_txr(	world_t 	*world,
-					text_t		*but,
+					text_t		*text,
 					const char	*info)
 {
 	SDL_Surface *surf;
@@ -83,12 +83,12 @@ void			set_text_txr(	world_t 	*world,
 	if (surf == NULL)
 	{
 		set_errma(SDL_ER);
-		but->txr = NULL;
+		text->txr = NULL;
 		return ;
 	}
-	but->txr = SDL_CreateTextureFromSurface(world->renderer,
+	text->txr = SDL_CreateTextureFromSurface(world->renderer,
 		 				surf);
-	if (but->txr == NULL)
+	if (text->txr == NULL)
 	{
 		set_errma(SDL_ER);
 	}

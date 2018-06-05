@@ -47,6 +47,9 @@ enum 		camp_level_e
 };
 
 typedef struct		world_s world_t;
+
+#include "board.h"
+
 struct 			world_s
 {
 	SDL_Window	*window;
@@ -61,6 +64,9 @@ struct 			world_s
 	difficulty_t	dif;
 	game_type_t	type;
 	camp_level_t	level;
+	char		*map;
+
+	player_t	winner;
 
 	bool		running;
 	bool		fullscreen;

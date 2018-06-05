@@ -22,10 +22,12 @@ bool		new_world(world_t **world)
 	(*world)->current_scene->elems	= NULL;
 	(*world)->window		= NULL;
 	(*world)->ttf_font		= NULL;
+	(*world)->map			= NULL;
 	(*world)->lang			= EN;
 	(*world)->dif			= NO_DIF;
 	(*world)->type			= NO_TYPE;
 	(*world)->level			= NO_LV;
+	(*world)->winner		= -1;
 	(*world)->running		= true;
 	(*world)->fullscreen		= false;
 	(*world)->mouse_pos[0]		= 0;

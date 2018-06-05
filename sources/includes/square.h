@@ -1,7 +1,5 @@
 #pragma once
 
-#include "world.h"
-#include "pawn.h"
 
 #include <SDL2/SDL.h>
 
@@ -27,6 +25,10 @@ enum		square_status_s
 };
 
 typedef struct		square_s square_t;
+
+#include "pawn.h"
+#include "world.h"
+
 struct			square_s
 {
 	SDL_Rect	*rect;

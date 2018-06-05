@@ -53,10 +53,6 @@ obj_t		*new_button(	world_t		*world,
 	set_over_func(new_but);
 	set_button_func(new_but);
 
-
-
-
-
 	return(new_obj);
 }
 
@@ -182,6 +178,7 @@ void			over_in_txr_image(world_t* world, button_t* but)
 	Uint32 		*target_pixel;
 	SDL_Color	new_color;
 
+
 	surface = IMG_Load(but->info);
 
 	if (!surface)
@@ -196,14 +193,13 @@ void			over_in_txr_image(world_t* world, button_t* but)
 		return(false);
 	}
 
-
 	for (int y = 0; y < surface->w; y++)
 	{
 		for (int x = 0; x < surface->h; x++)
 		{
 			target_pixel = 	(Uint8 *) surface->pixels +
-			y * surface->pitch +
-			x * sizeof(*target_pixel);
+					y * surface->pitch +
+					x * sizeof(*target_pixel);
 			if (*target_pixel != *((Uint32*)&TRANPARENCY))
 			{
 				new_color	= *((SDL_Color *)target_pixel);
@@ -213,7 +209,9 @@ void			over_in_txr_image(world_t* world, button_t* but)
 		}
 	}
 
+
 	SDL_UnlockSurface(surface);
+
 
 	SDL_DestroyTexture(but->txr);
 	but->txr = SDL_CreateTextureFromSurface(world->renderer,
@@ -281,7 +279,7 @@ void			over_out_txr_txt(world_t* world, button_t* but)
 					GOLD);
 	if (surf == NULL)
 	{
-		set_errma(but->txr_type == TXR_TEXT ? SDL_ER : IMG_ER);
+		set_errma(but->txr_type == TXR_TEXT ? TTF_ER : IMG_ER);
 		but->txr = NULL;
 		return;
 	}
@@ -289,11 +287,11 @@ void			over_out_txr_txt(world_t* world, button_t* but)
 	SDL_DestroyTexture(but->txr);
 	but->txr = SDL_CreateTextureFromSurface(world->renderer,
 						surf);
+	SDL_FreeSurface(surf);
 	if (but->txr == NULL)
 	{
 		set_errma(SDL_ER);
 	}
-	SDL_FreeSurface(surf);
 }
 
 void			set_button_func(button_t *but)
@@ -390,12 +388,33 @@ void			set_button_func(button_t *but)
 		case PP_DELETE :
 			but->button_func = &pawn_picker_delete;
 			break;
-			case NAMER_OK :
-				but->button_func = &namer_ok;
-				break;
-			case NAMER_BACK :
-				but->button_func = &namer_back;
-				break;
+		case NAMER_OK :
+			but->button_func = &namer_ok;
+			break;
+		case NAMER_BACK :
+			but->button_func = &namer_back;
+			break;
+		case UP_MCH :
+			but->button_func = &up_map_chooser;
+			break;
+		case DW_MCH :
+			but->button_func = &down_map_chooser;
+			break;
+		case NEXT :
+			but->button_func = &load_next_level;
+			break;
+		case START_GAME :
+			but->button_func = &start_game;
+			break;
+		case SAVE :
+			but->button_func = &save_and_back;
+			break;
+		case BRD_ROT_R :
+			but->button_func = &pawn_rotation_r;
+			break;
+		case BRD_ROT_L :
+			but->button_func = &pawn_rotation_l;
+			break;
 		default :
 			but->button_func = &dummy_function;
 			break;

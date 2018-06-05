@@ -7,7 +7,9 @@ enum 		obj_type_e
 	TEXT_T,
 	BOARD_T,
 	PAWN_PICKER_T,
-	NAMER_T
+	NAMER_T,
+	DY_TEXT_T,
+	MAP_CHOOSER_T
 };
 
 typedef struct			obj_s obj_t;

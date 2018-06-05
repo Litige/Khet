@@ -10,6 +10,10 @@
 #include "colors.h"
 #include "pawn_picker.h"
 #include "namer.h"
+#include "dy_text.h"
+#include "draw.h"
+#include "laser.h"
+#include "map_chooser.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -44,9 +48,16 @@ int		update_elem(world_t *world, obj_t *elem)
 		case NAMER_T :
 			elem_status = update_namer(world, elem->obj);
 			break;
+		case DY_TEXT_T :
+			elem_status = update_dy_text(world, elem->obj);
+			break;
+		case MAP_CHOOSER_T :
+			elem_status = update_map_chooser(world, elem->obj);
+			break;
 		default:
 			elem_status = 0;
 			fprintf(stderr, "Warning : unrecognized object type\n");
+			fprintf(stderr, "elem id : <%i>\n", elem->obj_type);
 			break;
 	}
 	return(elem_status);
@@ -147,12 +158,37 @@ int		update_board(world_t *world, board_t *board)
 		return(-1);
 	}
 
+	if (	board->target_pos[0] != -1 && board->target_pos[1] != -1 &&
+		IS_SET_FLAG(	board->squares
+				[board->target_pos[1]]
+				[board->target_pos[0]]->status, CLICKED))
+	{
+		set_but_pos(board);
+		update_elem(world, board->rot_button[0]);
+		update_elem(world, board->rot_button[1]);
+	}
+
 	if (!board->in_anime)
 	{
+		if (board->target_pos[1] != -1 && board->target_pos[0] != -1)
+		{
+			update_square_status(	world,
+						board,
+						board->squares
+						[board->target_pos[1]]
+						[board->target_pos[0]]);
+
+		}
 		for (int i = 0; i < 8; i++)
 		{
 			for (int j = 0; j < 10; j++)
 			{
+				if (	i == board->target_pos[1] &&
+					j == board->target_pos[0])
+				{
+					continue;
+				}
+
 				update_square_status(	world,
 							board,
 							board->squares[i][j]);
@@ -170,11 +206,12 @@ int		update_board(world_t *world, board_t *board)
 		{
 
 		if (	target_rendered			&&
-			i == board->target_pos[0]	&&
-			j == board->target_pos[1])
+			i == board->target_pos[1]	&&
+			j == board->target_pos[0])
 		{
 			continue;
 		}
+
 			switch(draw_board_square(	world,
 							board,
 							board->squares[i][j]))
@@ -191,26 +228,58 @@ int		update_board(world_t *world, board_t *board)
 		}
 	}
 
+
 	if (board->in_anime && board->frame_nb > 60 && world->click)
 	{
-		// del laser
-		// delete_laser(board->laser);
+		if (board->laser->target->pawn && board->laser->kill)
+		{
+			if (board->laser->target->pawn->type == PHARAOH)
+			{
+				world->dif	= board->dif;
+				world->type	= board->type;
+				world->level	= board->level;
+				world->winner = board->laser->target
+						->pawn->color == RED_PAWN ?
+						BLUE_PLY : RED_PLY;
+				load_end_game_scene(world);
+				return(1);
+			}
+			delete_pawn(board->laser->target->pawn);
+			board->laser->target->pawn = NULL;
+		}
+		delete_laser(board->laser);
 		board->current_ply =	(board->current_ply == RED_PLY) ?
 					BLUE_PLY : RED_PLY;
 		board->turn	+= 1;
 		board->in_anime = false;
 		board->frame_nb = -1;
 	}
-	if (board->in_anime && board->frame_nb < 120 && board->frame_nb > 0)
+	if (board->in_anime && board->frame_nb >= 0)
 	{
-		board->frame_nb += 1;
-		// draw laser
+		// to avoid potential overflow
+		if (board->frame_nb <= 60)
+		{
+			board->frame_nb += 1;
+		}
+
+		if(SDL_RenderCopy(	world->renderer, board->laser->txr,
+					NULL, board->laser->rect) < 0)
+		{
+			set_errma(SDL_ER);
+			return(-1);
+		}
 	}
 	if (board->in_anime && board->frame_nb < 0)
 	{
 		board->frame_nb += 1;
-		// generate laser mask
-		// add it to board->laser
+		board->target_pos[0] = -1;
+		board->target_pos[1] = -1;
+
+		board->laser = new_laser(world, board);
+		if (!board->laser)
+		{
+			return(-1);
+		}
 	}
 
 	return(0);
@@ -253,22 +322,28 @@ int		update_square_status(	world_t		*world,
 	else
 	{
 		DEL_FLAG(square->status, OVERED);
-		if (IS_SET_FLAG(square->status, CLICKED) && world->click)
+		if (was_clicked && world->click)
 		{
 			DEL_FLAG(square->status, CLICKED);
 		}
 	}
 
-	if (was_clicked && !IS_SET_FLAG(square->status, CLICKED))
+	if (valid_quit(world, board))
+	{
+		return(0);
+	}
+
+	if (	!valid_quit(world, board) &&
+		was_clicked &&
+		!IS_SET_FLAG(square->status, CLICKED))
 	{
 		set_all_move_target_flag(board, false);
 		board->target_pos[0] = -1;
 		board->target_pos[1] = -1;
 	}
-	else if (	board->type != EDIT_MAP			&&
-			!was_clicked				&&
-			IS_SET_FLAG(square->status, CLICKED)	&&
-			!IS_SET_FLAG(square->status, MOVE_TARGET))
+	else if (	!valid_quit(world, board) &&
+			!was_clicked &&
+			IS_SET_FLAG(square->status, CLICKED))
 	{
 		if (board->target_pos[0] > -1 && board->target_pos[1] > -1)
 		{
@@ -358,58 +433,107 @@ int		draw_board_square(	world_t		*world,
 					board_t		*board,
 					square_t	*square)
 {
-	pawn_t	*target_pawn;
-
-	target_pawn =	board->squares\
-			[board->target_pos[0]][board->target_pos[1]]->pawn;
 	switch (square->status)
 	{
 		case OVERED	| CLICKED	| MOVE_TARGET:
-			swap_pawn(&target_pawn, &square->pawn);
-			if (!target_pawn)
+			if (!TARGET_PAWN(board))
 			{
-				if (render_filled_rect(	world->renderer,
-							target_pawn->rect,
-							BLACK))
+				fprintf(stderr,
+					"Warning : impossible case\n");
+				fprintf(stderr,
+					"No target pawn\n");
+				fprintf(stderr,
+					"OVERED & CLICKED & MOVE_TARGET\n");
+				return(0);
+			}
+
+			if (!square->pawn)
+			{
+				swap_pawn(&TARGET_PAWN(board), &square->pawn);
+				if (!render_filled_rect(world->renderer,
+							board->squares
+							[board->target_pos[1]]
+							[board->target_pos[0]]
+							->rect,
+							BLACK) ||
+					display_pawn(world, square->pawn) < 0)
 				{
-					swap_pawn(&target_pawn, &square->pawn);
-					return(-1);
+					swap_pawn(	&TARGET_PAWN(board),
+							&square->pawn);
 				}
+				reset_pawn_rect(board, square->pawn,
+						square->pos[1], square->pos[0]);
 			}
 			else
 			{
-				if (	display_pawn(world, target_pawn) < 0 ||
+				swap_pawn(&TARGET_PAWN(board), &square->pawn);
+				reset_pawn_rect(board, square->pawn,
+						square->pos[1], square->pos[0]);
+				reset_pawn_rect(board, TARGET_PAWN(board),
+						board->target_pos[1],
+						board->target_pos[0]);
+				if (	display_pawn(world, TARGET_PAWN(board))
+					< 0 ||
 					display_pawn(world, square->pawn) < 0)
 				{
-					swap_pawn(&target_pawn, &square->pawn);
-					return(-1);
+					swap_pawn(	&TARGET_PAWN(board),
+							&square->pawn);
 				}
 			}
+
 			board->in_anime = true;
 			return(1);
 			break;
 		case OVERED	| 0		| MOVE_TARGET:
-			swap_pawn(&target_pawn, &square->pawn);
-			if (!target_pawn)
+			if (!TARGET_PAWN(board))
 			{
-				if (render_filled_rect(	world->renderer,
-							target_pawn->rect,
+				fprintf(stderr, "Warning : impossible case\n");
+				fprintf(stderr, "No target pawn\n");
+				fprintf(stderr, "OVERED & MOVE_TARGET\n");
+				return(0);
+			}
+			if (!square->pawn)
+			{
+				if (!render_filled_rect(world->renderer,
+							board->squares
+							[board->target_pos[1]]
+							[board->target_pos[0]]
+							->rect,
 							BLACK))
 				{
-					swap_pawn(&target_pawn, &square->pawn);
+					swap_pawn_rect(	&TARGET_PAWN(board),
+							&square->pawn);
 					return(-1);
 				}
+				TARGET_PAWN(board)->rect->x =
+						square->rect->x + 1;
+				TARGET_PAWN(board)->rect->y =
+						square->rect->y + 1;
+				if (display_pawn(world, TARGET_PAWN(board)) < 0)
+				{
+					swap_pawn_rect(	&TARGET_PAWN(board),
+							&square->pawn);
+					return(-1);
+				}
+				reset_pawn_rect(board, TARGET_PAWN(board),
+						board->target_pos[1],
+						board->target_pos[0]);
 			}
 			else
 			{
-				if (	display_pawn(world, target_pawn) < 0 ||
+				swap_pawn_rect(	&TARGET_PAWN(board),
+						&square->pawn);
+				if (	display_pawn(world, TARGET_PAWN(board))
+					< 0 ||
 					display_pawn(world, square->pawn) < 0)
 				{
-					swap_pawn(&target_pawn, &square->pawn);
+					swap_pawn_rect(	&TARGET_PAWN(board),
+							&square->pawn);
 					return(-1);
 				}
+				swap_pawn_rect(	&TARGET_PAWN(board),
+						&square->pawn);
 			}
-			swap_pawn(&target_pawn, &square->pawn);
 			return(1);
 		case 0		| 0		| MOVE_TARGET:
 			if (!render_rect(world->renderer, square->rect, GREEN))
@@ -440,8 +564,8 @@ int		draw_board_square(	world_t		*world,
 			}
 			break;
 		case 0		| CLICKED	| MOVE_TARGET:
-			// impossible case
 			fprintf(stderr, "Warning : impossible case\n");
+			fprintf(stderr, "CLICKED && MOVE_TARGET\n");
 		default:
 			if (square->pawn)
 			{
@@ -567,4 +691,98 @@ int		update_namer(world_t *world, namer_t *namer)
 
 	return(1);
 
+}
+
+int	update_dy_text(world_t *world, dy_text_t *text)
+{
+	if (!set_dy_text_txr(world, text) || !set_dy_text_rect(text))
+	{
+		return(-1);
+	}
+
+	if(SDL_RenderCopy(	world->renderer, text->txr,
+				NULL, text->rect) < 0)
+	{
+		set_errma(SDL_ER);
+		return(-1);
+	}
+
+	return(0);
+}
+
+int		update_map_chooser(world_t *world, map_chooser_t *mpc)
+{
+	int	display_target;
+
+	display_target = mpc->target;
+
+	for (int i = 0; mpc->names_txr[i]; i++)
+	{
+		if (SDL_RenderCopy(	world->renderer, mpc->names_txr[i],
+					NULL, mpc->names_rect[i]) < 0)
+		{
+			set_errma(SDL_ER);
+			return(-1);
+		}
+		if (SDL_PointInRect(	(SDL_Point*)world->mouse_pos,
+					mpc->names_rect[i]))
+		{
+			if (!render_rect(	world->renderer,
+						mpc->names_rect[i],
+						GOLD))
+			{
+				return(-1);
+			}
+			if (world->click)
+			{
+				mpc->target =
+					(mpc->target == mpc->top_map + i) ?
+					-1 : mpc->top_map + i;
+			}
+			display_target = mpc->top_map + i;
+		}
+	}
+
+	switch (update_elem(world, mpc->up_but))
+	{
+		case 0 :
+			break;
+		case 1 :
+			return(1);
+		case -1 :
+			return(-1);
+	}
+
+	switch (update_elem(world, mpc->dw_but))
+	{
+		case 0 :
+			break;
+		case 1 :
+			return(1);
+		case -1 :
+			return(-1);
+	}
+
+	if (display_target != -1)
+	{
+		if (SDL_RenderCopy(	world->renderer,
+					mpc->maps_txr[display_target],
+					NULL, mpc->txr_rect) < 0)
+		{
+			set_errma(SDL_ER);
+			return(-1);
+		}
+	}
+
+	if (!render_rect(world->renderer, mpc->txr_rect, GOLD))
+	{
+		return(-1);
+	}
+
+	if (!render_rect(world->renderer, mpc->select_rect, GOLD))
+	{
+		return(-1);
+	}
+
+	return(0);
 }

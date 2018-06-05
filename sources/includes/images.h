@@ -19,3 +19,6 @@
 #define L_ARROW_BUT	RES_P "left-arrow.PNG\0"
 
 #define DELETE_BUT	RES_P "delete.PNG\0"
+
+#define UP_MCH_BUT	RES_P "up-arrow.PNG\0"
+#define DW_MCH_BUT	RES_P "down-arrow.PNG\0"

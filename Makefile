@@ -9,7 +9,7 @@ LINKER_FLAGS = -lSDL2_ttf -lSDL2_image -lSDL2_gfx $(shell sdl2-config --libs --c
 
 INCLUDE = -Isources/includes
 
-OBJ_NAME = test
+OBJ_NAME = Khet
 
 LIBS += $(LINKER_FLAGS)
 

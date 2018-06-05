@@ -27,16 +27,13 @@ int		main()
 		return(false);
 	}
 
-	printf("end of init\n");
-
-	printf("starting main loop\n");
-
 	if (!main_loop(world))
 	{
-		fprintf(stderr, "Error : %s\n", errma());
+		if (errma() != DEFAULT)
+		{
+			fprintf(stderr, "Error : %s\n", errma());
+		}
 	}
-
-	printf("end of main loop\n");
 
 	quit(world);
 	return EXIT_SUCCESS;

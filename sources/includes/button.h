@@ -1,6 +1,5 @@
 #pragma once
 
-#include "world.h"
 
 #include <stdbool.h>
 #include <SDL2/SDL.h>
@@ -32,11 +31,16 @@ enum 		button_type_s
 	EXIT,
 	MAP_EDITOR,
 	SAVE_EDIT,
+	SAVE,
 	OPT_FULLSCREEN,
 	OPT_SCREEN_SIZE,
 	OPT_LANG,
+	NEXT,
+	START_GAME,
 	NAMER_OK,
 	NAMER_BACK,
+	UP_MCH,
+	DW_MCH,
 	PP_PHARAOH,
 	PP_SCARAB,
 	PP_ANUBIS,
@@ -46,10 +50,15 @@ enum 		button_type_s
 	PP_BLUE_SQUARE,
 	PP_R_ARROW,
 	PP_L_ARROW,
-	PP_DELETE
+	PP_DELETE,
+	BRD_ROT_R,
+	BRD_ROT_L
 };
 
 typedef struct			button_s button_t;
+
+#include "world.h"
+
 struct				button_s
 {
 	texture_type_t		txr_type;

@@ -15,11 +15,11 @@ obj_t	*new_text(	world_t		*world,
 			int		x,
 			int		y,
 			pos_type_t	ref);
-void	set_text_rect(	text_t	*but,
+void	set_text_rect(	text_t		*text,
 			int		x,
 			int		y,
 			pos_type_t	ref);
 void	set_text_txr(	world_t 	*world,
-			text_t	*but,
+			text_t		*text,
 			const char	*info);
 void	del_text(obj_t *text);

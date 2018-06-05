@@ -2,8 +2,6 @@
 
 #include "object.h"
 
-#include <stdbool.h>
-
 typedef enum	scene_type_s scene_type_t;
 enum		scene_type_s
 {
@@ -13,11 +11,13 @@ enum		scene_type_s
 	QUICK_GAME_MENU_S,
 	CREDIT_S,
 	GAME_S,
-	RULES_S
+	RULES_S,
+	END_S,
+	MAP_CHOICE_S
 };
 
 typedef struct	scene_s scene_t;
-struct			scene_s
+struct		scene_s
 {
 	obj_t		**elems;
 	scene_type_t	type;

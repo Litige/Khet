@@ -29,6 +29,9 @@ enum 		text_e
 	B_OPT_LANG,
 	B_NAMER_OK,
 	B_NAMER_BACK,
+	B_CONTINUE,
+	B_NEXT,
+	B_REMATCH,
 	T_MAIN_MENU,
 	T_QUICK_GAME_MENU,
 	T_SETTING_MENU,
@@ -38,14 +41,21 @@ enum 		text_e
 	T_CREDIT_L3,
 	T_CREDIT_L4,
 	T_CREDIT_L5,
-	T_DIF_CHOICE
+	T_CREDIT_L6,
+	T_DIF_CHOICE,
+	T_CUR_PLY,
+	T_TURN,
+	T_WIN_R,
+	T_WIN_B,
+	DY_RED,
+	DY_BLUE
 };
 
 /*
 ** TEXT[lang_t][text_t]
 */
 
-static const char *TEXT[2][28] = {	{
+static const char *TEXT[2][38] = {	{
 						"Nouvelle Campagne\0",
 						"Continuer Campagne\0",
 						"Parti Rapide\0",
@@ -64,6 +74,9 @@ static const char *TEXT[2][28] = {	{
 						"Langue\0",
 						"Ok\0",
 						"Retour\0",
+						"Continuer\0",
+						"Suivant\0",
+						"Match Retour\0",
 						"Khet\0",
 						"Choisissez un mode\0",
 						"Options\0",
@@ -73,7 +86,14 @@ static const char *TEXT[2][28] = {	{
 						"Arthur Froger\0",
 						"Marcus Reynaud\0",
 						"Kévin Desbonnets\0",
-						"Choisissez une difficulté\0"
+						"Art : Jules Jacob\0",
+						"Choisissez une difficulté\0",
+						"Joueur\0",
+						"Tour\0",
+						"Victoire Rouge\0",
+						"Victoire Bleu\0",
+						"Rouge\0",
+						"Bleu\0"
 					},
 					{
 						"New Campaign\0",
@@ -94,6 +114,9 @@ static const char *TEXT[2][28] = {	{
 						"Language\0",
 						"Ok\0",
 						"Back\0",
+						"Continue\0",
+						"Next\0",
+						"Rematch\0",
 						"Khet\0",
 						"Choose a game mode\0",
 						"Settings\0",
@@ -103,6 +126,13 @@ static const char *TEXT[2][28] = {	{
 						"Arthur Froger\0",
 						"Marcus Reynaud\0",
 						"Kévin Desbonnets\0",
-						"Choose a difficulty\0"
+						"Art : Jules Jacob\0",
+						"Pick a difficulty\0",
+						"Player\0",
+						"Turn\0",
+						"Red Victory\0",
+						"Blue Victory\0",
+						"Red\0",
+						"Blue\0"
 					}
 				};

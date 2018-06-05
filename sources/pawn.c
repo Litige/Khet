@@ -4,6 +4,7 @@
 #include "errma.h"
 #include "images.h"
 #include "colors.h"
+#include "board.h"
 
 #include <stdbool.h>
 
@@ -11,11 +12,11 @@
 #include <SDL2/SDL2_rotozoom.h>
 #include <SDL2/SDL_image.h>
 
-pawn_t			*new_pawn(	world_t		*world,
-					char 		type,
-					char 		orient,
-					char 		color,
-					SDL_Rect 	*rect)
+pawn_t			*new_pawn(	world_t			*world,
+					pawn_type_t		type,
+					pawn_color_t		orient,
+					pawn_orientation_t	color,
+					SDL_Rect		*rect)
 {
 	pawn_t		*new_pwn;
 
@@ -50,6 +51,8 @@ bool			set_pawn_txr(world_t *world, pawn_t *pawn)
 	SDL_Surface	*surf;
 	SDL_Surface	*tmp;
 
+	pawn->txr = NULL;
+
 	switch (pawn->type)
 	{
 		case PHARAOH:
@@ -68,7 +71,7 @@ bool			set_pawn_txr(world_t *world, pawn_t *pawn)
 			surf = IMG_Load(SPHINX_PAWN);
 			break;
 		case NO_PAWN:
-		default :
+		default:
 			return(false);
 
 	}
@@ -144,6 +147,15 @@ int			display_pawn(world_t *world, pawn_t *pawn)
 	return(0);
 }
 
+void			swap_pawn_rect(pawn_t **pawn1, pawn_t **pawn2)
+{
+	SDL_Rect	*tmp;
+
+	tmp		= (*pawn1)->rect;
+	(*pawn1)->rect	= (*pawn2)->rect;
+	(*pawn2)->rect	= tmp;
+}
+
 void			swap_pawn(pawn_t **pawn1, pawn_t **pawn2)
 {
 	pawn_t		*tmp;
@@ -201,6 +213,7 @@ bool			swap_color(	world_t		*world,
 			}
 		}
 	}
+
 
 	SDL_UnlockSurface(surf);
 

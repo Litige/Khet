@@ -8,12 +8,10 @@ bool		main_loop(world_t *world)
 {
 	int elem_status;
 
-	load_editor_scene(world);
-
-	// if (new_scene(world, world->current_scene, MAIN_MENU_S) == false)
-	// {
-	// 	return(false);
-	// }
+	if (new_scene(world, world->current_scene, MAIN_MENU_S) == false)
+	{
+		return(false);
+	}
 
 	while (world->running)
 	{

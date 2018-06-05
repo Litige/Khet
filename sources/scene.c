@@ -7,6 +7,8 @@
 #include "object.h"
 #include "images.h"
 #include "pawn_picker.h"
+#include "dy_text.h"
+#include "map_chooser.h"
 
 #include <stdbool.h>
 
@@ -22,6 +24,8 @@ bool	set_credit(world_t *world, scene_t *scene, scene_type_t type);
 bool	set_game_scene(world_t *world, scene_t *scene, scene_type_t type);
 bool	set_rules_scene(world_t *world, scene_t *scene, scene_type_t type);
 void	del_scene(scene_t *scene);
+bool	set_end_scene(world_t *world, scene_t *scene, scene_type_t type);
+bool	set_map_choice_scene(world_t *world, scene_t *scene, scene_type_t type);
 
 void	del_scene(scene_t* scene)
 {
@@ -49,9 +53,18 @@ void	del_scene(scene_t* scene)
 					case NAMER_T:
 						del_namer(scene->elems[i]);
 						break;
+					case DY_TEXT_T:
+						del_dy_text(scene->elems[i]);
+						break;
+					case MAP_CHOOSER_T:
+						del_map_chooser(scene
+								->elems[i]);
+						break;
 					default:
 					fprintf(stderr,
 					"Warning : unrecognized object type\n");
+					fprintf(stderr, "elem id : <%i>\n",
+						scene->elems[i]->obj_type);
 					break;
 				}
 			}
@@ -67,34 +80,36 @@ bool	new_scene(world_t *world, scene_t *scene, scene_type_t type)
 	{
 		case MAIN_MENU_S:
 			return(set_main_menu(world, scene, type));
-			break;
 		case SETTINGS_S:
 			return(set_settings_menu(world, scene, type));
-			break;
 		case DIFFICULTY_S:
 			return(set_difficulty_menu(world, scene, type));
-			break;
 		case QUICK_GAME_MENU_S:
 			return(set_quick_game_menu(world, scene, type));
-			break;
 		case CREDIT_S:
 			return(set_credit(world, scene, type));
-			break;
 		case GAME_S:
 			return(set_game_scene(world, scene, type));
-			break;
 		case RULES_S:
 			return(set_rules_scene(world, scene, type));
-			break;
+		case END_S:
+			return(set_end_scene(world, scene, type));
+		case MAP_CHOICE_S:
+			return(set_map_choice_scene(world, scene, type));
 		default :
 			return(false);
-			break;
 	}
-	return(true);
+
+	return(false);
 }
 
 bool	set_main_menu(world_t *world, scene_t *scene, scene_type_t type)
 {
+	world->dif	= NO_DIF;
+	world->type	= NO_TYPE;
+	world->level	= NO_LV;
+	world->winner	= -1;
+
 	int	center_x = world->size[1] / 2;
 
 	if ((scene->elems = malloc(sizeof(obj_t*) * 10)) == NULL)
@@ -159,7 +174,7 @@ bool	set_main_menu(world_t *world, scene_t *scene, scene_type_t type)
 					center_x,
 					world->size[0] * 2 / 5 + MED_FONT * 7,
 					CENTER);
-	// add BG obj (in first pos)
+
 	if (!set_font_size(world, BIG_FONT))
 	{
 		del_scene(scene);
@@ -227,7 +242,6 @@ bool	set_settings_menu(world_t *world, scene_t *scene, scene_type_t type)
 					center_x, center_y + MED_FONT * 2,
 					CENTER);
 
-	// add BG obj (in first pos)
 	if (!set_font_size(world, BIG_FONT))
 	{
 		del_scene(scene);
@@ -358,8 +372,6 @@ bool	set_quick_game_menu(world_t *world, scene_t *scene, scene_type_t type)
 					center_x, center_y + MED_FONT * 2,
 					CENTER);
 
-	// add title Text obj
-	// add BG obj (in first pos)
 	if (!set_font_size(world, BIG_FONT))
 	{
 		del_scene(scene);
@@ -392,7 +404,7 @@ bool	set_credit(world_t *world, scene_t *scene, scene_type_t type)
 	int	center_x = world->size[1] / 2;
 	int	center_y = world->size[0] / 2;
 
-	if ((scene->elems = malloc(sizeof(obj_t *) * 8)) == NULL)
+	if ((scene->elems = malloc(sizeof(obj_t *) * 9)) == NULL)
 	{
 		set_errma(MALLOC);
 		return(false);
@@ -430,15 +442,19 @@ bool	set_credit(world_t *world, scene_t *scene, scene_type_t type)
 					TEXT[world->lang][T_CREDIT_L5],
 					center_x, center_y + MED_FONT * 2,
 					CENTER);
-	scene->elems[6] = new_button(	world,
+	scene->elems[6] = new_text(	world,
+					TEXT[world->lang][T_CREDIT_L6],
+					center_x, center_y + MED_FONT * 3,
+					CENTER);
+	scene->elems[7] = new_button(	world,
 					BACK,
 					TXR_TEXT,
 					TEXT[world->lang][B_BACK],
 					center_x, center_y + MED_FONT * 5,
 					CENTER);
-	scene->elems[7] = NULL;
+	scene->elems[8] = NULL;
 
-	for (int i = 0 ; i < 7 ; i++)
+	for (int i = 0 ; i < 8 ; i++)
 	{
 		if (scene->elems[i] == NULL)
 		{
@@ -468,20 +484,60 @@ bool	set_game_scene(world_t *world, scene_t *scene, scene_type_t type)
 		return(false);
 	}
 
-	scene->elems[0] = NULL;	// game board
-	scene->elems[1] = NULL; // turn
-	scene->elems[2] = NULL; // current_ply
+	scene->elems[0] = new_board(world, map);
 
-	scene->elems[3] = NULL; // save button
+	scene->elems[1] = NULL;
+	scene->elems[2] = NULL;
+	scene->elems[3] = NULL;
+	scene->elems[4] = NULL;
+
+	if (!scene->elems[0])
+	{
+		del_scene(scene);
+		return(false);
+	}
+
+	scene->elems[1] = new_dy_text(	world, TEXT[world->lang][T_TURN],
+					&((board_t*)(scene->elems[0]->obj))
+					->turn, INT,
+					5, 5,
+					TOPLEFT);
+	scene->elems[2] = new_dy_text(	world, TEXT[world->lang][T_TURN],
+					&((board_t*)(scene->elems[0]->obj))
+					->current_ply, PLAYER,
+					5, 5 + MED_FONT,
+					TOPLEFT);
+	if (	world->type == PLY_VS_PLY_LOCAL		||
+		world->type == PLY_VS_PLY_ONLINE	||
+		world->type == PLY_VS_IA)
+	{
+		scene->elems[3] = new_button(	world,
+						BACK,
+						TXR_TEXT,
+						TEXT[world->lang][B_BACK],
+						5, world->size[0] - MED_FONT,
+						TOPLEFT);
+	}
+	else
+	{
+		scene->elems[3] = new_button(	world,
+						SAVE,
+						TXR_TEXT,
+						TEXT[world->lang][B_BACK],
+						5, world->size[0] - MED_FONT,
+						TOPLEFT);
+	}
 
 	scene->elems[4] = NULL;
-	// load map if NEW_CAMP
-	// load next map if new_level
-	// load save if PLY_VS_PLY
-	// side info (interactive text) (void* info enum info_type)
-	//	turn
-	//	current_ply
-	// save button on CAMPAIGN mode else nothing
+
+	for (int i = 0 ; i < 4 ; i++)
+	{
+		if (scene->elems[i] == NULL)
+		{
+			del_scene(scene);
+			return(false);
+		}
+	}
 }
 
 bool			set_map_edit_scene(	world_t		*world,
@@ -552,4 +608,159 @@ bool	set_rules_scene(world_t *world, scene_t *scene, scene_type_t type)
 	// screenshot of the game and text
 	// button BACK
 	// button next and previous rule
+}
+
+bool			set_end_scene(	world_t		*world,
+					scene_t		*scene,
+					scene_type_t	type)
+{
+	int		center_x = world->size[1] / 2;
+	int		center_y = world->size[0] / 2;
+
+	if ((scene->elems = malloc(sizeof(obj_t *) * 4)) == NULL)
+	{
+		set_errma(MALLOC);
+		return(false);
+	}
+
+	scene->type = type;
+
+	scene->elems[0] = new_text(	world,
+					(world->winner == RED_PLY) ?
+					TEXT[world->lang][T_WIN_R]:
+					TEXT[world->lang][T_WIN_B],
+					center_x, center_y,
+					CENTER);
+
+	scene->elems[3] = NULL;
+
+	if (world->type == LOAD_CAMPAIGN || world->type == NEW_CAMPAIGN)
+	{
+		if (world->type == LEVEL_3)
+		{
+			scene->elems[1] = new_button(
+				world,
+				BACK,
+				TXR_TEXT,
+				TEXT[world->lang][B_BACK],
+				center_x,
+				center_y + (MED_FONT * 2),
+				CENTER);
+		}
+		else
+		{
+			scene->elems[1] = new_button(
+				world,
+				NEXT,
+				TXR_TEXT,
+				TEXT[world->lang][B_NEXT],
+				center_x,
+				center_y + (MED_FONT * 2),
+				CENTER);
+		}
+
+		scene->elems[2] = NULL;
+
+		for (int i = 0 ; i < 2 ; i++)
+		{
+			if (scene->elems[i] == NULL)
+			{
+				del_scene(scene);
+				return(false);
+			}
+		}
+	}
+	else
+	{
+		scene->elems[1] = new_button(
+			world,
+			BACK,
+			TXR_TEXT,
+			TEXT[world->lang][B_BACK],
+			world->size[1] / 3,
+			center_y + (MED_FONT * 2),
+			CENTER);
+
+		scene->elems[2] = new_button(
+			world,
+			(world->type == PLY_VS_IA) ? VS_AI : VS_PLY_OFF,
+			TXR_TEXT,
+			TEXT[world->lang][B_REMATCH],
+			(world->size[1] * 2) / 3,
+			center_y + (MED_FONT * 2),
+			CENTER);
+
+		for (int i = 0 ; i < 3 ; i++)
+		{
+			if (scene->elems[i] == NULL)
+			{
+				del_scene(scene);
+				return(false);
+			}
+		}
+	}
+
+	return(true);
+}
+
+bool		set_map_choice_scene(	world_t		*world,
+					scene_t		*scene,
+					scene_type_t	type)
+{
+	map_chooser_t	*tmp;
+
+	if ((scene->elems = malloc(sizeof(obj_t *) * 4)) == NULL)
+	{
+		set_errma(MALLOC);
+		return(false);
+	}
+
+	scene->type = type;
+	scene->elems[0] = new_map_chooser(world);
+	scene->elems[1] = NULL;
+	scene->elems[2] = NULL;
+	scene->elems[3] = NULL;
+
+	if (!scene->elems[0])
+	{
+		del_scene(scene);
+		return(false);
+	}
+
+	tmp = scene->elems[0]->obj;
+
+	scene->elems[1] = new_button(
+				world,
+				(world->type == VS_AI ? NEW_CAMP : START_GAME),
+				TXR_TEXT,
+				TEXT[world->lang][B_CONTINUE],
+				tmp->select_rect->x + (tmp->select_rect->w / 2),
+				(tmp->select_rect->y + tmp->select_rect->h) +
+				((world->size[0] -
+				(tmp->select_rect->y + tmp->select_rect->h))
+				/ 3),
+				CENTER);
+
+	scene->elems[2] = new_button(
+				world,
+				BACK,
+				TXR_TEXT,
+				TEXT[world->lang][B_BACK],
+				tmp->select_rect->x + (tmp->select_rect->w / 2),
+				(tmp->select_rect->y + tmp->select_rect->h) +
+				(((world->size[0] -
+				(tmp->select_rect->y + tmp->select_rect->h))
+				/ 3) * 2),
+				CENTER);
+
+	for (int i = 0 ; i < 3 ; i++)
+	{
+		if (scene->elems[i] == NULL)
+		{
+			del_scene(scene);
+			return(false);
+		}
+	}
+
+	return(true);
 }

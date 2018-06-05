@@ -30,20 +30,7 @@ square_t		*new_square(	world_t	*world,
 	new_sqr->rect->x = board->rect->x + (board->rect->h / 8 * x);
 	new_sqr->rect->y = board->rect->y + (board->rect->h / 8 * y);
 
-
-	switch (conf[0])
-	{
-		case 1:
-			new_sqr->type = RED_SQUARE;
-			break;
-		case 2:
-			new_sqr->type = BLUE_SQUARE;
-			break;
-		case 0:
-		default:
-			new_sqr->type = BLANK_SQUARE;
-			break;
-	}
+	new_sqr->type = conf[0];
 
 	if (conf[1] != NO_PAWN)
 	{
@@ -84,16 +71,17 @@ void			delete_square(square_t *square)
 
 void			set_all_move_target_flag(board_t *board, bool flag)
 {
-	for (	int i = board->target_pos[0] - 1;
-		i <= board->target_pos[0] + 1;
+	for (	int i = board->target_pos[1] - 1;
+		i <= board->target_pos[1] + 1;
 		i++)
 	{
-		for (	int j = board->target_pos[1] - 1;
-			j <= board->target_pos[1] + 1;
+		for (	int j = board->target_pos[0] - 1;
+			j <= board->target_pos[0] + 1;
 			j++)
 		{
-			if (	(j == board->target_pos[1] &&
-				i == board->target_pos[0]) ||
+
+			if (	(j == board->target_pos[0] &&
+				i == board->target_pos[1]) ||
 				0 > i || i >= 8 ||
 				0 > j || j >= 10)
 			{
@@ -130,8 +118,8 @@ bool			valid_move(board_t *board, int i, int j)
 	square_t	*target_square;
 	square_t	*move_target;
 
-	target_square	= board->squares	[board->target_pos[0]]
-						[board->target_pos[1]];
+	target_square	= board->squares	[board->target_pos[1]]
+						[board->target_pos[0]];
 	move_target	= board->squares[i][j];
 
 	if (	move_target->type != BLANK_SQUARE &&
@@ -145,7 +133,14 @@ bool			valid_move(board_t *board, int i, int j)
 		case PHARAOH:
 		case ANUBIS:
 		case PYRAMID:
-			return((move_target->pawn == NULL) ? false : true);
+			if (	!move_target->pawn &&
+				(move_target->type ==
+				target_square->pawn->color ||
+				move_target->type == BLANK_SQUARE))
+			{
+				return(true);
+			}
+			break;
 		case SCARAB:
 			if (move_target->pawn)
 			{
@@ -154,15 +149,9 @@ bool			valid_move(board_t *board, int i, int j)
 				{
 					return(true);
 				}
-				else
-				{
-					return(false);
-				}
+				break;
 			}
-			else
-			{
-				return(true);
-			}
+			return(true);
 		case SPHINX:
 		default:
 			return(false);

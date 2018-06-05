@@ -35,6 +35,8 @@ void get_input(world_t *world)
 				}
 				else if (
 					world->event_handler->key.keysym.sym ==
+					SDLK_RETURN  ||
+					world->event_handler->key.keysym.sym ==
 					SDLK_RETURN2 ||
 					world->event_handler->key.keysym.sym ==
 					SDLK_KP_ENTER)

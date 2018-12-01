@@ -1,5 +1,17 @@
 # Khet, a school project
 
+## What is this
+
+It's a year long shool project i did in my first year.
+
+It's supposed to be a copy of laser chess.
+
+From what I remmember, it's fully fonctionnal but I might remember wrong.
+
+There is no windows version per say but i don't think there is any reason not to compile on Windows.
+
+It has some weird design choices : they are the results of not enough planning.
+
 ## Instal
 
 ### Linux/Mac
